@@ -9,12 +9,18 @@
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../build"
   },
+  "plugins": {
+    "sql": {
+      "preload": [
+        "sqlite:supervisord-tauri.db"
+      ]
+    }
+  },
   "app": {
     "windows": [
       {
         "title": "supervisord-tauri",
-        "width": 800,
-        "height": 600
+        "fullscreen": true
       }
     ],
     "security": {

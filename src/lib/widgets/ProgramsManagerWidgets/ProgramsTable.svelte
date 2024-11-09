@@ -14,6 +14,13 @@
 	import {type ProcessModel} from "$lib/store/process.model";
 	import {Label} from "$lib/components/ui/label";
 	import {RefreshCwIcon} from "lucide-svelte";
+	import {
+		addHiddenColumns,
+		addPagination,
+		addSelectedRows,
+		addSortBy,
+		addTableFilter
+	} from "svelte-headless-table/plugins";
 
 	export let host: Host;
 	export let endpoint = "";
@@ -32,6 +39,7 @@
 		await postProgramStartByName(name);
 		await refreshList();
 	}
+
 	// E start a program,and refresh list
 
 	// S stop a program,and refresh list
@@ -39,8 +47,106 @@
 		await postProgramStopByName(name);
 		await refreshList();
 	}
-	// E stop a program,and refresh list
 
+	// E stop a program,and refresh list
+	import {createRender, Render, createTable, Subscribe} from "svelte-headless-table";
+	import {readable, writable} from "svelte/store";
+	import ProgramsTableAction from "$lib/widgets/ProgramsManagerWidgets/ProgramsTableControl.svelte";
+	import ProgramsTableStatusBadge from "$lib/widgets/ProgramsManagerWidgets/ProgramsTableStatusBadge.svelte";
+	import ProgramsTableCheckbox from "$lib/widgets/ProgramsManagerWidgets/ProgramsTableCheckbox.svelte";
+	import {cn} from "$lib/utils";
+	import dayjs from "dayjs";
+
+	function renderTable(processes: ProcessModel[]) {
+		let table = createTable(readable(processes), {
+			select: addSelectedRows(),
+			hide: addHiddenColumns(),
+		});
+		const columns = table.createColumns([
+			table.column({
+				id: 'selection',
+				header: (_, {pluginStates}) => {
+					const {allPageRowsSelected} = pluginStates.select;
+					return createRender(ProgramsTableCheckbox, {
+						checked: allPageRowsSelected,
+					});
+				},
+				accessor: (info) => info,
+				cell: ({row}, {pluginStates}) => {
+					const {getRowState} = pluginStates.select;
+					const {isSelected} = getRowState(row);
+					return createRender(ProgramsTableCheckbox, {
+						checked: isSelected
+					});
+				}
+			}),
+			table.column({
+				accessor: ({name}) => name,
+				header: $t("program.index"),
+				id: "index",
+				cell(info) {
+					return info.row.depth + 1;
+				}
+			}),
+			table.column({
+				accessor: "name",
+				header: $t("program.name"),
+			}),
+			table.column({
+				accessor: "description",
+				header: $t("program.description"),
+			}),
+			table.column({
+				accessor: "statename",
+				id: "status",
+				header: $t("program.status"),
+				cell({value}) {
+					return createRender(ProgramsTableStatusBadge, {
+						statename: value
+					});
+				}
+			}),
+			table.column({
+				accessor: (info) => info,
+				id: "control",
+				header: $t("program.control"),
+				cell: ({value: process}) => {
+					return createRender(ProgramsTableAction, {
+						start: handlePostProgramStartByName.bind(null, process.name),
+						stop: handlePostStopStartByName.bind(null, process.name),
+						process: process
+					});
+				}
+			}),
+		]);
+		return table.createViewModel(columns);
+
+	}
+
+	let {headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates} = renderTable(processes);
+	let {selectedDataIds} = pluginStates.select;
+
+	$: {
+		const {
+			headerRows: _headerRows,
+			pageRows: _pageRows,
+			tableAttrs: _tableAttrs,
+			tableBodyAttrs: _tableBodyAttrs,
+			pluginStates: {select: {selectedDataIds: _selectedDataIds}},
+		} = renderTable(processes);
+		headerRows = _headerRows;
+		pageRows = _pageRows;
+		tableAttrs = _tableAttrs;
+		tableBodyAttrs = _tableBodyAttrs;
+		selectedDataIds = _selectedDataIds;
+	}
+	const tableHeaderClassMap: Record<any, any> = {
+		'index': "w-[4em] text-center",
+		'name': " text-center",
+		'selection': "w-[2em]",
+		"status": "w-[6em] text-center",
+		"control": " [&.cell]:gap-[12px] w-[10em] text-center",
+	};
 </script>
 <Card.Root>
 	<Card.Header class="px-7">
@@ -60,60 +166,51 @@
 		</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<Table.Root>
-			<Table.Header>
-				<Table.Row>
-					<Table.Head>#</Table.Head>
-					<Table.Head>
-						{$t("program.name")}
-					</Table.Head>
-					<Table.Head class="hidden sm:table-cell">
-						{$t("program.status")}
-					</Table.Head>
-					<Table.Head class="hidden sm:table-cell">{$t("program.control")}</Table.Head>
-				</Table.Row>
-			</Table.Header>
-			<Table.Body>
-				{#if $isLoadingData}
-					<div class="flex items-center justify-center  w-full my-[24px] mx-auto">
-						<RingLoader color="hsl(var(--primary) / 0.9)"></RingLoader>
-					</div>
-				{:else }
-					{#each processes as process,index }
-						<Table.Row class="bg-accent">
-							<Table.Cell>
-								<div class="font-medium">{index + 1}</div>
-							</Table.Cell>
-							<Table.Cell>
-								<div class="font-medium">{process.name}</div>
-							</Table.Cell>
-							<Table.Cell class="hidden sm:table-cell">
-								<Badge class="text-xs" variant="outline">
-									{$t(`program.${process.statename.toLowerCase()}`,
-											{default: process.statename})}
-								</Badge>
-							</Table.Cell>
-							<Table.Cell>
-								<!-- S Control Button-->
-								<Button size="sm"
-								        variant="default"
-								        disabled={[EProcessStatus.Running,EProcessStatus.Starting].includes(process.statename)}
-								        on:click={handlePostProgramStartByName.bind(null,process.name)}>
-									{$t("program.start")}
-								</Button>
-								<Button
-										size="sm"
-										variant="destructive"
-										disabled={[EProcessStatus.Stopped,EProcessStatus.Starting,EProcessStatus.Exited].includes(process.statename)}
-										on:click={handlePostStopStartByName.bind(null,process.name)}
-								>{$t("program.stop")}
-								</Button>
-								<!-- E Control Button-->
-							</Table.Cell>
-						</Table.Row>
+		{#if $isLoadingData}
+			<div class="w-full flex justify-center items-center  mx-auto">
+				<RingLoader></RingLoader>
+			</div>
+		{:else }
+			<Table.Root {...$tableAttrs}>
+				<Table.Header>
+					{#each $headerRows as headerRow}
+						<Subscribe rowAttrs={headerRow.attrs()}>
+							<Table.Row
+							>
+								{#each headerRow.cells as cell (cell.id)}
+									<Subscribe attrs={cell.attrs()} let:attrs let:props props={cell.props()}>
+										<Table.Head {...attrs}
+										            class={`[&:has([role=checkbox])]:pl-3 header ${tableHeaderClassMap[cell.id]}`}
+										>
+											<Render of={cell.render()}/>
+										</Table.Head>
+									</Subscribe>
+								{/each}
+							</Table.Row>
+						</Subscribe>
 					{/each}
-				{/if}
-			</Table.Body>
-		</Table.Root>
+				</Table.Header>
+				<Table.Body {...$tableBodyAttrs}>
+					{#each $pageRows as row (row.id)}
+						<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
+							<Table.Row {...rowAttrs}
+
+							           data-state={$selectedDataIds[row.id] && "selected"}
+							>
+								{#each row.cells as cell (cell.id)}
+									<Subscribe attrs={cell.attrs()} props={cell.props()} let:attrs>
+										<Table.Cell {...attrs}
+										            class={cn("[&:has([role=checkbox])]:pl-3","cell", tableHeaderClassMap[cell.id])}
+										>
+											<Render of={cell.render()}/>
+										</Table.Cell>
+									</Subscribe>
+								{/each}
+							</Table.Row>
+						</Subscribe>
+					{/each}
+				</Table.Body>
+			</Table.Root>
+		{/if}
 	</Card.Content>
 </Card.Root>

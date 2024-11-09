@@ -20,7 +20,7 @@
     "windows": [
       {
         "title": "supervisord-tauri",
-        "fullscreen": true
+        "fullscreen": false
       }
     ],
     "security": {

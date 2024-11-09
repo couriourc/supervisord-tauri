@@ -24,32 +24,58 @@
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 	import {Input} from "$lib/components/ui/input";
 	import * as Pagination from "$lib/components/ui/pagination";
+	import * as Avatar from "$lib/components/ui/avatar";
 	import {Progress} from "$lib/components/ui/progress";
 	import {Separator} from "$lib/components/ui/separator";
 	import * as Sheet from "$lib/components/ui/sheet";
 	import * as Table from "$lib/components/ui/table";
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as Tooltip from "$lib/components/ui/tooltip";
+	import {ProgramClient} from "$lib/services/program";
 	import {useRequest} from "alova/client";
 	import {RingLoader} from "svelte-loading-spinners";
 	import {EProcessStatus} from "$lib/types/program";
-	import {getMetrics} from "$lib/services/metrics";
+	import {copy} from '$lib/directives/copy';
+	import {t, locale} from "$i18n/index";
 
 	import dayjs from "dayjs";
-	import AddHostDialog from "$lib/widgets/AddHostDialog.svelte";
-	import {Host, hostsManager, useHostsManager} from "$lib/store/hosts.model";
-	import {onMount} from "svelte";
-	import {Import, LucidePlusCircle, Plus} from "lucide-svelte";
-	import Breadcrumbs from "$lib/widgets/Breadcrumbs.svelte";
-
-	const {data: hosts, loading: isLoadingData, refresh: refreshList, remove: handleRemove} = useHostsManager();
+	import {MetricsClient} from "$lib/services/metrics";
+	import {Host} from "$lib/store/hosts.model";
+	import {SupervisorClient} from "$lib/services/supervisor";
+	import {RefreshCwIcon} from "lucide-svelte";
+	import ProgramsTable from "./ProgramsManagerWidgets/ProgramsTable.svelte";
 
 
-	const {loading: isLoadingMetrics, data: metrics} = useRequest<any>(getMetrics, {force: true});
+	export let host = new Host({});
+	const endpoint: string = host.endpoint!;
+	const {getProgramList, postProgramStartByName, postProgramStopByName,} = new ProgramClient(endpoint);
+	const {getSupervisorConfig} = new SupervisorClient(endpoint);
+	const {getMetrics} = new MetricsClient(endpoint);
 
+	const {
+		loading: isLoadingData,
+		data: processes,
+		send: refreshList
+	} = useRequest(getProgramList, {force: true});
+	const {loading: isLoadingMetrics, data: metrics} = useRequest(getMetrics, {force: true});
+	const {
+		data: editorConfig,
+		loading: isLoadingEditorConfig,
+		send: refreshSupervisorConfig
+	} = useRequest(getSupervisorConfig);
 
-	function handleToAddNewHosts() {
+	async function handleRefreshSupervisorConfig() {
+		await refreshSupervisorConfig();
+	}
 
+	async function handlePostProgramStartByName(name: string) {
+		await postProgramStartByName(name);
+		await refreshList();
+	}
+
+	async function handlePostStopStartByName(name: string) {
+		await postProgramStopByName(name);
+		await refreshList();
 	}
 
 </script>
@@ -59,53 +85,7 @@
 		class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3"
 >
 	<div class="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-		<div class="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-			<Card.Root class="sm:col-span-2 relative">
-				<Card.Header class="pb-3">
-					<Card.Title>Your Programs</Card.Title>
-					<Card.Description class="max-w-lg text-balance leading-relaxed">
-						Computer language design is just like a stroll in the park. Jurassic Park, that is.🙌
-					</Card.Description>
-				</Card.Header>
-
-				<Card.Footer class="absolute bottom-0 right-1">
-					<AddHostDialog
-							onCreated={refreshList}
-					>
-						<Button on:click={handleToAddNewHosts} class="flex gap-2">
-							<LucidePlusCircle/>
-							<span>Add Host</span>
-						</Button>
-					</AddHostDialog>
-				</Card.Footer>
-			</Card.Root>
-			<Card.Root>
-				<Card.Header class="pb-2">
-					<Card.Description>Now</Card.Description>
-					<Card.Title class="text-4xl">执行信息</Card.Title>
-				</Card.Header>
-				<Card.Content>
-					<div class="text-muted-foreground text-xs"></div>
-				</Card.Content>
-				<Card.Footer>
-					<Progress value={25} aria-label="25% increase"/>
-				</Card.Footer>
-			</Card.Root>
-			<Card.Root>
-				<Card.Header class="pb-2">
-					<Card.Description>Now</Card.Description>
-					<Card.Title class="text-3xl">运行情况</Card.Title>
-				</Card.Header>
-				<Card.Content>
-					<div class="text-muted-foreground text-xs">1/2</div>
-				</Card.Content>
-				<Card.Footer>
-					<Progress value={12} aria-label="12% increase"/>
-				</Card.Footer>
-			</Card.Root>
-		</div>
-
-		<Tabs.Root value="week">
+		<Tabs.Root value="program">
 			<div class="flex items-center">
 				<div class="ml-auto flex items-center gap-2">
 					<DropdownMenu.Root>
@@ -121,108 +101,49 @@
 							</Button>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content align="end">
-							<DropdownMenu.Label>Filter by</DropdownMenu.Label>
+							<DropdownMenu.Label>Filter by Status</DropdownMenu.Label>
 							<DropdownMenu.Separator/>
-							<DropdownMenu.CheckboxItem checked>
-								Fulfilled
-							</DropdownMenu.CheckboxItem>
+							{#each Object.entries(EProcessStatus) as [status] }
+								<DropdownMenu.CheckboxItem>
+									{$t(`program.${status.toLowerCase()}`)}
+								</DropdownMenu.CheckboxItem>
+							{/each}
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
 					<Button size="sm" variant="outline" class="h-7 gap-1 text-sm">
 						<File class="h-3.5 w-3.5"/>
 						<span class="sr-only sm:not-sr-only">Export</span>
 					</Button>
-					<Button size="sm" variant="outline" class="h-7 gap-1 text-sm">
-						<Import class="h-3.5 w-3.5"/>
-						<span class="sr-only sm:not-sr-only">Import</span>
-					</Button>
 				</div>
 			</div>
-			<Tabs.Content value="week">
-				<Card.Root>
-					<Card.Header class="px-7">
-						<Card.Title>Hosts</Card.Title>
-						<Card.Description>All Hosts from your created.</Card.Description>
-					</Card.Header>
-					<Card.Content>
-						<Table.Root>
-							<Table.Header>
-								<Table.Row>
-									<Table.Head>#</Table.Head>
-									<Table.Head>Name</Table.Head>
-									<Table.Head class="hidden sm:table-cell">
-										EndpointUrl
-									</Table.Head>
-									<Table.Head class="hidden sm:table-cell">Action</Table.Head>
-								</Table.Row>
-							</Table.Header>
-							<Table.Body>
-								{#if $isLoadingData}
-									<div class="flex items-center justify-center  w-full  my-[24px] mx-auto">
-										<RingLoader color="hsl(var(--primary) / 0.9)"></RingLoader>
-									</div>
-								{:else }
-									{#each $hosts as host,index }
-										<Table.Row class="bg-accent">
-											<Table.Cell>
-												<div class="font-medium">{index + 1}</div>
-											</Table.Cell>
-											<Table.Cell>
-												<div class="font-medium">{host.name}</div>
-											</Table.Cell>
-											<Table.Cell class="hidden sm:table-cell">
-												<Badge class="text-xs" variant="secondary">
-													{host.endpoint}
-												</Badge>
-											</Table.Cell>
-											<Table.Cell>
-												<Button variant="link" class="text-gray-400">
-													<a href={`host?host_id=${host.id}`}>check</a>
-												</Button>
-
-												<Button variant="link">
-													edit
-												</Button>
-												<Button on:click={handleRemove.bind(null,host)} variant="link"
-												        class="text-red-400">
-													delete
-												</Button>
-											</Table.Cell>
-										</Table.Row>
-									{/each}
-
-								{/if}
-
-							</Table.Body>
-						</Table.Root>
-					</Card.Content>
-				</Card.Root>
+			<Tabs.Content value="program">
+				<ProgramsTable host={host} endpoint={endpoint}></ProgramsTable>
 			</Tabs.Content>
 		</Tabs.Root>
 	</div>
+
 	<div>
 		<Card.Root class="overflow-hidden">
 			<Card.Header class="bg-muted/50 flex flex-row items-start">
 				<div class="grid gap-0.5">
 					<Card.Title class="group flex items-center gap-2 text-lg">
-						Metrics
-						<Button
-								size="icon"
-								variant="outline"
-								class="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-						>
-							<Copy class="h-3 w-3"/>
-							<span class="sr-only">Copy Order ID</span>
-						</Button>
+						supervisord.ini
+						<div use:copy={$editorConfig?.data.filename}>
+							<Button
+									size="icon"
+									variant="outline"
+									class="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+							>
+								<Copy class="h-3 w-3"/>
+								<span class="sr-only">Copy config path</span>
+							</Button>
+						</div>
 					</Card.Title>
 					<Card.Description>Date: {dayjs().format("YYYY-MM-DD hh:mm")}</Card.Description>
 				</div>
 				<div class="ml-auto flex items-center gap-1">
 					<Button size="sm" variant="outline" class="h-8 gap-1">
-						<Truck class="h-3.5 w-3.5"/>
-						<span class="lg:sr-only xl:not-sr-only xl:whitespace-nowrap">
-                  Track Order
-                </span>
+						<RefreshCwIcon on:click={handleRefreshSupervisorConfig} class="h-3.5 w-3.5"/>
 					</Button>
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger asChild let:builder>
@@ -247,12 +168,12 @@
 			</Card.Header>
 			<Card.Content class="p-6 text-sm">
 				<div class="grid gap-3 max-h-[500px] overflow-y-auto">
-					{#if $isLoadingMetrics}
+					{#if $isLoadingEditorConfig}
 						<div class="mx-auto">
 							<RingLoader></RingLoader>
 						</div>
 					{:else }
-						{@html $metrics?.data}
+						{@html $editorConfig?.data.content}
 					{/if}
 				</div>
 			</Card.Content>

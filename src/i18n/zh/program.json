@@ -1,0 +1,13 @@
+{
+  "start": "开始",
+  "stop": "停止",
+  "running": "运行中",
+  "exited": "已退出",
+  "starting": "启动中",
+  "restart": "重新启动",
+  "name": "名称",
+  "status": "状态",
+  "process": "进程",
+  "control": "操作",
+  "command": "命令"
+}

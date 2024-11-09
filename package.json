@@ -16,6 +16,7 @@
     "@alova/adapter-axios": "^2.0.10",
     "@revolist/svelte-datagrid": "^4.10.19",
     "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-clipboard-manager": "2.1.0-beta.6",
     "@tauri-apps/plugin-shell": "^2",
     "@tauri-apps/plugin-sql": "~2",
     "@tauri-apps/plugin-store": "~2",
@@ -27,7 +28,9 @@
     "normalize-url": "^8.0.1",
     "radash": "^12.1.0",
     "svelte-french-toast": "^1.2.0",
+    "svelte-headless-table": "^0.18.3",
     "svelte-use-form": "^2.10.0",
+    "sveltekit-i18n": "^2.4.2",
     "underscore": "^1.13.7"
   },
   "devDependencies": {

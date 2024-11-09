@@ -8,7 +8,10 @@ import {vitePreprocess} from '@sveltejs/vite-plugin-svelte';
 const config = {
   preprocess: vitePreprocess(),
   kit       : {
-    adapter: adapter()
+    alias  : {
+      '$i18n/*': './src/i18n/*',
+    },
+    adapter: adapter(),
   },
 };
 

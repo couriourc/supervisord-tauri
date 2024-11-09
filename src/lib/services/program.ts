@@ -2,9 +2,11 @@ import {alovaInstance} from "./index";
 import normalizeUrl from "normalize-url";
 import {partial} from "radash";
 import type {AbcClient} from "$lib/services/abcClient";
+import type {ProcessModel} from "$lib/store/process.model";
+import type {AxiosResponse} from "axios";
 
 export const getProgramList = (endpoint: string) =>
-    alovaInstance.Get(normalizeUrl(endpoint + "/program/list"));
+    alovaInstance.Get<AxiosResponse<ProcessModel[]>>(normalizeUrl(endpoint + "/program/list"));
 export const postProgramStartByName = (endpoint: string, name: string) =>
     alovaInstance.Post(normalizeUrl(endpoint + `/program/start/${name}`));
 export const postProgramStopByName = (endpoint: string, name: string) =>

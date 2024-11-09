@@ -9,3 +9,4 @@ export const alovaInstance = createAlova({
     requestAdapter: axiosRequestAdapter(),
     statesHook: SvelteHook,
 });
+

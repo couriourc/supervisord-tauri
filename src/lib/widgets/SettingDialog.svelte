@@ -15,12 +15,5 @@
 				change the setting?
 			</Dialog.Description>
 		</Dialog.Header>
-
-		<form class="grid gap-4 py-4" >
-			<div class="grid grid-cols-4 items-center gap-4">
-				<Label for="name" class="text-right">Lang</Label>
-				<Input id="name" name="name" class="col-span-3"/>
-			</div>
-		</form>
 	</Dialog.Content>
 </Dialog.Root>

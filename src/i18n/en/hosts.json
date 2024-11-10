@@ -1,0 +1,22 @@
+{
+  "edit": "edit",
+  "check": "detail",
+  "remove": "remove",
+  "add_host": "Add Host",
+  "dashboard": "Dashboard",
+  "submit_new_host": "confirm",
+  "submit_edited_host": "confirm",
+  "add_new_host": "Add Host",
+  "edit_host": "Edit Host",
+  "add_new_host.description": "endpoint may be like `http(s)://host:port`",
+  "add_new_host.name": "Host Name",
+  "add_new_host.endpoint": "Endpoint",
+  "add_new_host.username": "username",
+  "add_new_host.password": "password",
+  "manager.name": "Host Name",
+  "manager.username": "Username",
+  "manager.password": "Password",
+  "manager.action": "Action",
+  "manager.index": "#",
+  "manager.endpoint": "Endpoint"
+}

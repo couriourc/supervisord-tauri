@@ -6,7 +6,7 @@
 	import * as Menubar from "$lib/components/ui/menubar";
 	import AddHostDialog from "$lib/widgets/AddHostDialog.svelte";
 	import type {Host} from "$lib/store/hosts.model";
-
+	import {t} from "$i18n/index";
 
 	interface Props {
 		remove: (host: Host) => void;
@@ -22,20 +22,20 @@
 		<Button size="sm"
 		        variant="link"
 		        class="text-info"
-		>详情
+		>{$t("hosts.check")}
 		</Button>
 	</a>
 	<AddHostDialog host={host} isEdit={true}>
 		<Button size="sm"
 		        variant="link"
 		        class="text-primary"
-		>编辑
+		>{$t("hosts.edit")}
 		</Button>
 	</AddHostDialog>
 	<Button size="sm"
 	        variant="link"
 	        class="text-destructive"
 	        on:click={remove.bind(null,host)}
-	>移除
+	>{$t("hosts.remove")}
 	</Button>
 </div>

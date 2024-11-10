@@ -20,7 +20,6 @@
 	const {
 		data: hosts,
 		loading: isLoadingData,
-		refresh: refreshList,
 		remove: handleRemove
 	} = getContext<ReturnType<typeof useHostsManager>>(HostsManager.ContextKey);
 
@@ -52,7 +51,6 @@
 				header: $t("hosts.manager.index"),
 				id: "index",
 				cell(info) {
-					console.log(info);
 					return (~~info.row.id) + 1;
 				}
 			}),
@@ -89,7 +87,7 @@
 				cell({value: info}) {
 					return createRender(HostsTableAction, {
 						host: info,
-						remove:handleRemove
+						remove: handleRemove
 					});
 				}
 			}),
@@ -120,8 +118,8 @@
 		tableAttrs = _tableAttrs;
 		tableBodyAttrs = _tableBodyAttrs;
 		selectedDataIds = _selectedDataIds;
+		console.log("Updating");
 	}
-
 
 </script>
 
@@ -170,7 +168,7 @@
 			<div class="w-full pt-[12px] flex-col flex items-center justify-center mx-auto">
 				<Empty/>
 				<AddHostDialog>
-					<Button size="sm" variant="link">{$t("hosts.add_host?")}</Button>
+					<Button size="sm" variant="link">{$t("hosts.add_host")}?</Button>
 				</AddHostDialog>
 			</div>
 		</Card.Content>

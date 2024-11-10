@@ -2,7 +2,7 @@ import {getStore} from "$lib/store";
 import {z} from "zod";
 import {writable} from "svelte/store";
 import {onMount} from "svelte";
-import {Store} from "lucide-svelte";
+import {sleep} from "radash";
 
 export class HostsManager {
     static namespace: string = "hosts";
@@ -64,6 +64,21 @@ export class HostsManager {
         await store.set(HostsManager.namespace, hosts);
         await store.save();
     }
+
+    async BatchUpdate(hosts: Host[]) {
+        /*TODO: Optimize Query Function*/
+        const store = await getStore();
+        for (const host of hosts) {
+            const allHosts = await this.Query();
+            const nHostIndex = allHosts.findIndex(someHost => someHost.id === host.id);
+            if (nHostIndex === -1) {
+                await this.Create(host);
+            } else {
+                await this.Replace(host);
+            }
+
+        }
+    }
 }
 
 export class Host {
@@ -97,12 +112,17 @@ export function useHostsManager() {
     const loading = writable<boolean>(false);
     let data = writable<Host[]>([]);
     const refresh = async () => {
+        console.log("Refreshing...");
         loading.set(true);
         data.set(await hostsManager.Query());
         loading.set(false);
     };
     const remove = async (host: Host) => {
         await hostsManager.Delete(host);
+        await refresh();
+    };
+    const batchUpdate = async (hosts: Host[]) => {
+        await hostsManager.BatchUpdate(hosts);
         await refresh();
     };
     onMount(async () => {
@@ -112,6 +132,7 @@ export function useHostsManager() {
         loading,
         data,
         refresh,
+        batchUpdate,
         remove
     };
 }

@@ -9,7 +9,7 @@
 	import {RingLoader} from 'svelte-loading-spinners';
 	import {ProgramClient} from "$lib/services/program";
 	import {useRequest} from "alova/client";
-	import {FilterX} from "lucide-svelte";
+	import {CircleChevronLeft, FilterX} from "lucide-svelte";
 	import {type ProcessModel} from "$lib/store/process.model";
 	import {Label} from "$lib/components/ui/label";
 	import {RefreshCwIcon} from "lucide-svelte";
@@ -129,6 +129,7 @@
 		filtered = condition as EProcessStatus;
 
 	}
+
 	$: {
 		const {
 			headerRows: _headerRows,
@@ -150,6 +151,11 @@
 
 <Tabs.Root value="program">
 	<div class="flex items-center">
+
+		<a href="/" class="flex items-center gap-2 group ">
+			<CircleChevronLeft class="size-4 group-hover:text-primary group-hover:scale-110"/>
+			<span class="text-info group-hover:text-primary">Home</span>
+		</a>
 		<div class="ml-auto flex items-center gap-2">
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
@@ -192,8 +198,9 @@
 						<span class="sr-only">{$t("program.refresh")}</span>
 					</Button>
 				</Card.Title>
-				<Card.Description>All Programs from your host<Label
-						class="bg-gray-500 text-white ml-[4px] rounded-[2px]">{host.name}</Label>.
+				<Card.Description>All Programs from your host
+					<Badge
+							class="bg-gray-500 text-white ml-[4px] cursor-pointer rounded-[2px]">{host.name}</Badge>
 				</Card.Description>
 			</Card.Header>
 			<Card.Content>

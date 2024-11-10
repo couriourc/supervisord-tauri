@@ -35,8 +35,12 @@
 	import Breadcrumbs from "$lib/widgets/Breadcrumbs.svelte";
 	import {GitFork} from "lucide-svelte";
 	import {PUBLIC_GITHUB_LINK} from "$env/static/public";
+	import LangSelector from "$lib/widgets/LangSelector.svelte";
+	import {SettingsModel} from "$lib/store/settings.model";
+	import {setContext} from "svelte";
 
-	loadTranslations("zh");
+	setContext(SettingsModel.Namespace, new SettingsModel());
+
 
 </script>
 <Toaster></Toaster>
@@ -49,17 +53,17 @@
 					class="bg-primary text-primary-foreground group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold md:h-8 md:w-8 md:text-base"
 			>
 				<Package2 class="h-4 w-4 transition-all group-hover:scale-110"/>
-				<span class="sr-only">{$t("nav.Dashboard")}</span>
+				<span class="sr-only">{$t("nav.dashboard")}</span>
 			</a>
 		</nav>
-		<nav class="mt-auto flex flex-col items-center gap-4 px-2 py-4">
-			<SettingDialog>
-				<Button variant="link">
-					<Settings class="h-5 w-5"/>
-					<span class="sr-only">{$t("nav.Settings")}</span>
-				</Button>
-			</SettingDialog>
-		</nav>
+		<!--		<nav class="mt-auto flex flex-col items-center gap-4 px-2 py-4">-->
+		<!--			<SettingDialog>-->
+		<!--				<Button variant="link">-->
+		<!--					<Settings class="h-5 w-5"/>-->
+		<!--					<span class="sr-only">{$t("nav.setting")}</span>-->
+		<!--				</Button>-->
+		<!--			</SettingDialog>-->
+		<!--		</nav>-->
 	</aside>
 
 	<div class="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
@@ -67,7 +71,8 @@
 				class="bg-background sticky top-0 z-30 flex h-14 items-center gap-4 border-b px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6"
 		>
 
-			<Breadcrumbs/>
+			<LangSelector/>
+			<!--			<Breadcrumbs/>-->
 			<div class="relative ml-auto flex-1 md:grow-0">
 			</div>
 			<DropdownMenu.Root>
@@ -80,7 +85,7 @@
 					>
 						<Avatar.Root>
 							<Avatar.Image src="/favicon.png" alt="@supervisord-plus"/>
-								<Avatar.Fallback>CN</Avatar.Fallback>
+							<Avatar.Fallback>CN</Avatar.Fallback>
 						</Avatar.Root>
 					</Button>
 				</DropdownMenu.Trigger>

@@ -5,6 +5,7 @@ import zh from "./zh";
 import lang from "./lang.json";
 
 const config: Config = ({
+    initLocale: 'zh',
     translations: {
         en: {
             ...en,
@@ -17,3 +18,4 @@ const config: Config = ({
     }
 });
 export const {t, locale, locales, loading, loadTranslations} = new i18n(config);
+

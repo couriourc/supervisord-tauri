@@ -11,7 +11,6 @@
 		ChevronLeft,
 		ChevronRight,
 		EllipsisVertical,
-
 		Loader
 	} from "lucide-svelte";
 	import {Button} from "$lib/components/ui/button";
@@ -24,18 +23,15 @@
 	import {getContext} from "svelte";
 	import {saveFile} from "$lib/utils/save";
 	import toast from "svelte-french-toast";
+	import {Host} from "$lib/store/hosts.model";
 
-	interface Props {
-		refresh: () => void;
-	}
+	const host = getContext<Host>(Host.ContextKey);
 
-	const {refresh}: Props = $props();
-	let endpoint = getContext<string>("host.endpoint");
 	let content = $state("");
 
 	let editor: Editor;
 
-	const {getSupervisorConfig, postSupervisorConfig, postSupervisorReload} = new SupervisorClient(endpoint);
+	const {getSupervisorConfig, postSupervisorConfig, postSupervisorReload} = new SupervisorClient(host);
 
 
 	const {
@@ -61,7 +57,6 @@
 		if ($isUpdatingSupervisorConfig) return;
 		await updateSupervisorConfig(content);
 		await postSupervisorReload();
-		refresh();
 	}
 
 	async function handleToSaveHostConfig() {

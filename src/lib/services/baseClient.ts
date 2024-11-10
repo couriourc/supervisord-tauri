@@ -1,7 +1,11 @@
 import {createAlova} from 'alova';
 import {axiosRequestAdapter} from "@alova/adapter-axios";
 import SvelteHook from "alova/svelte";
+import {createClientTokenAuthentication} from 'alova/client';
 
+const {onAuthRequired, onResponseRefreshToken} = createClientTokenAuthentication({
+    // ...
+});
 
 export class BaseClient {
     _endpoint: string = "";
@@ -9,7 +13,10 @@ export class BaseClient {
         baseURL: "",
         requestAdapter: axiosRequestAdapter(),
         statesHook: SvelteHook,
+
     });
+    password: string = "";
+    username: string = "";
 
     get endpoint() {
         return this._endpoint;
@@ -19,4 +26,14 @@ export class BaseClient {
         this.alovaInstance.options.baseURL = val;
     }
 
+    setAuth(username: string, password: string) {
+        this.username = username;
+        this.password = password;
+        /*@ts-ignore*/
+        this.alovaInstance.options.beforeRequest = onAuthRequired(
+            (method) => {
+                method.config.headers["Authorization"] = `Basic ${btoa(`${username}:${password}`)}`;
+            }
+        );
+    }
 }

@@ -6,6 +6,7 @@ import {Store} from "lucide-svelte";
 
 export class HostsManager {
     static namespace: string = "hosts";
+    static ContextKey = "hosts_manager";
 
 
     constructor() {
@@ -44,6 +45,16 @@ export class HostsManager {
         await store.save();
     }
 
+    async Replace(host: Host) {
+        const store = await getStore();
+        const hosts = await this.Query();
+        const nHostIndex = hosts.findIndex(someHost => someHost.id === host.id);
+        if (nHostIndex === -1) return null;
+        hosts[nHostIndex] = host;
+        await store.set(HostsManager.namespace, hosts);
+        await store.save();
+    }
+
     async Delete(host: Host) {
         const store = await getStore();
         const hosts = await this.Query();
@@ -56,7 +67,7 @@ export class HostsManager {
 }
 
 export class Host {
-
+    static ContextKey = "host";
     name?: string = "";
     endpoint?: string = "http://localhost:8080";
     group?: string = "";

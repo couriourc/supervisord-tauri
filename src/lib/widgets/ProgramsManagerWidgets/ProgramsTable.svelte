@@ -5,27 +5,22 @@
 	import * as Table from "$lib/components/ui/table";
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-	import type {Host} from '$lib/store/hosts.model';
+	import {Host} from '$lib/store/hosts.model';
 	import {RingLoader} from 'svelte-loading-spinners';
 	import {ProgramClient} from "$lib/services/program";
 	import {useRequest} from "alova/client";
-	import {FilterX, ListFilter} from "lucide-svelte";
+	import {FilterX} from "lucide-svelte";
 	import {type ProcessModel} from "$lib/store/process.model";
 	import {Label} from "$lib/components/ui/label";
 	import {RefreshCwIcon} from "lucide-svelte";
 	import {addHiddenColumns, addSelectedRows} from "svelte-headless-table/plugins";
 	import {t} from '$i18n/index';
 
-	export let host: Host;
-	let endpoint = getContext<string>("host.endpoint");
+	const host = getContext<Host>(Host.ContextKey);
 
-	const {getProgramList, postProgramStartByName, postProgramStopByName,} = new ProgramClient(endpoint);
+	const {getProgramList, postProgramStartByName, postProgramStopByName} = new ProgramClient(host);
 
-	const {
-		loading: isLoadingData,
-		data: processesData,
-		send: refreshList
-	} = useRequest(getProgramList, {force: true});
+	const {loading: isLoadingData, data: processesData, send: refreshList} = useRequest(getProgramList, {force: true});
 	let processes: ProcessModel[] = [];
 	let filtered: EProcessStatus | undefined;
 	$: processes = $processesData?.data ?? [];
@@ -43,14 +38,13 @@
 
 	// E stop a program,and refresh list
 	import {createRender, Render, createTable, Subscribe} from "svelte-headless-table";
-	import {readable, writable} from "svelte/store";
+	import {readable} from "svelte/store";
 	import ProgramsTableAction from "$lib/widgets/ProgramsManagerWidgets/ProgramsTableControl.svelte";
 	import ProgramsTableStatusBadge from "$lib/widgets/ProgramsManagerWidgets/ProgramsTableStatusBadge.svelte";
 	import ProgramsTableCheckbox from "$lib/widgets/ProgramsManagerWidgets/ProgramsTableCheckbox.svelte";
 	import {cn} from "$lib/utils";
 	import {getContext} from "svelte";
 	import {EProcessStatus} from "$lib/types/program";
-	import AddHostDialog from "$lib/widgets/AddHostDialog.svelte";
 	import {Empty} from "$lib/components/ui/empty";
 
 	function renderTable(processes: ProcessModel[]) {
@@ -122,6 +116,19 @@
 	let {headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates} = renderTable(processes);
 	let {selectedDataIds} = pluginStates.select;
 
+	const tableHeaderClassMap: Record<any, any> = {
+		'index': "w-[4em] text-center",
+		'name': " text-center",
+		'selection': "w-[2em]",
+		"status": "w-[6em] text-center",
+		"control": " [&.cell]:gap-[12px] w-[10em] text-center",
+	};
+
+	function handleFilterProgramList(condition: string) {
+		if (filtered === (condition as EProcessStatus)) return filtered = undefined;
+		filtered = condition as EProcessStatus;
+
+	}
 	$: {
 		const {
 			headerRows: _headerRows,
@@ -139,21 +146,7 @@
 		tableBodyAttrs = _tableBodyAttrs;
 		selectedDataIds = _selectedDataIds;
 	}
-	const tableHeaderClassMap: Record<any, any> = {
-		'index': "w-[4em] text-center",
-		'name': " text-center",
-		'selection': "w-[2em]",
-		"status": "w-[6em] text-center",
-		"control": " [&.cell]:gap-[12px] w-[10em] text-center",
-	};
-
-	function handleFilterProgramList(condition: string) {
-		if (filtered === condition) return filtered = undefined;
-		filtered = condition as EProcessStatus;
-
-	}
 </script>
-
 
 <Tabs.Root value="program">
 	<div class="flex items-center">
@@ -216,7 +209,8 @@
 									<Table.Row
 									>
 										{#each headerRow.cells as cell (cell.id)}
-											<Subscribe attrs={cell.attrs()} let:attrs let:props props={cell.props()}>
+											<Subscribe attrs={cell.attrs()} let:attrs let:props
+											           props={cell.props()}>
 												<Table.Head {...attrs}
 												            class={`[&:has([role=checkbox])]:pl-3 header ${tableHeaderClassMap[cell.id]}`}
 												>

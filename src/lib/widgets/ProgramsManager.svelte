@@ -41,28 +41,22 @@
 	import HostConfEditor from "$lib/widgets/ProgramsManagerWidgets/HostConfEditor.svelte";
 	import {setContext} from "svelte";
 
-	export let host = new Host({});
-	const endpoint: string = host.endpoint!;
+	export let host: Host = new Host({});
+	setContext<Host>(Host.ContextKey, host);
 
-	const {getProgramList} = new ProgramClient(endpoint);
-	const {send: refreshList} = useRequest(getProgramList, {force: true});
-
-	setContext<string>("host.endpoint", endpoint);
-	let filtered;
 
 </script>
 
 
-<main
-		class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3"
->
+<main class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+	<!-- S program table -->
 	<div class="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-		<ProgramsTable host={host}></ProgramsTable>
-
+		<ProgramsTable/>
 	</div>
+	<!-- E program table -->
 
 	<!-- S conf editor -->
-	<HostConfEditor refresh={()=>refreshList()}/>
+	<HostConfEditor/>
 	<!-- E conf editor -->
 </main>
 

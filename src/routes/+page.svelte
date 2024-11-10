@@ -31,26 +31,17 @@
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import {useRequest} from "alova/client";
 	import {RingLoader} from "svelte-loading-spinners";
-	import {EProcessStatus} from "$lib/types/program";
-	//	import {getMetrics} from "$lib/services/metrics";
 
 	import dayjs from "dayjs";
 	import AddHostDialog from "$lib/widgets/AddHostDialog.svelte";
-	import {useHostsManager} from "$lib/store/hosts.model";
+	import {HostsManager, useHostsManager} from "$lib/store/hosts.model";
 	import {setContext} from "svelte";
 	import {Import, LucidePlusCircle} from "lucide-svelte";
-	import HostsManagerTable from "$lib/widgets/HostsManagerTable.svelte";
+	import HostsManagerTable from "$lib/widgets/HostsManager.svelte";
 	import {t} from "$i18n/index";
 
-	setContext("hostsManager", useHostsManager());
+	setContext<ReturnType<typeof useHostsManager>>(HostsManager.ContextKey, useHostsManager());
 
-
-	//	const {loading: isLoadingMetrics, data: metrics} = useRequest(getMetrics, {force: true});
-
-
-	function handleToAddNewHosts() {
-
-	}
 
 </script>
 
@@ -70,7 +61,7 @@
 
 				<Card.Footer class="absolute bottom-0 right-1">
 					<AddHostDialog>
-						<Button on:click={handleToAddNewHosts} class="flex gap-1">
+						<Button class="flex gap-1">
 							<LucidePlusCircle class="h-4 w-4"/>
 							<span>{$t("hosts.add_host")}</span>
 						</Button>
@@ -154,7 +145,7 @@
 			<Card.Header class="bg-muted/50 flex flex-row items-start">
 				<div class="grid gap-0.5">
 					<Card.Title class="group flex items-center gap-2 text-lg">
-						Metrics
+						功能导航
 						<Button
 								size="icon"
 								variant="outline"

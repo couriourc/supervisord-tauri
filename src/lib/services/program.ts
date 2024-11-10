@@ -4,6 +4,7 @@ import {partial} from "radash";
 import {BaseClient} from "$lib/services/baseClient";
 import type {ProcessModel} from "$lib/store/process.model";
 import type {AxiosResponse} from "axios";
+import type {Host} from "$lib/store/hosts.model";
 
 export const getProgramList = (alovaInstance: BaseClient["alovaInstance"]) =>
     alovaInstance.Get<AxiosResponse<ProcessModel[]>>("/program/list");
@@ -20,9 +21,10 @@ export const postProgramStopPrograms = (alovaInstance: BaseClient["alovaInstance
 
 export class ProgramClient extends BaseClient {
 
-    constructor(endpoint: string) {
+    constructor(host: Host) {
         super();
-        this.endpoint = endpoint;
+        this.endpoint = host.endpoint!;
+        this.setAuth(host.username!, host.password!);
         this.getProgramList = getProgramList.bind(null, this.alovaInstance);
         this.postProgramStartByName = postProgramStartByName.bind(null, this.alovaInstance);
         this.postProgramStopByName = postProgramStopByName.bind(null, this.alovaInstance);

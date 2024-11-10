@@ -2,5 +2,20 @@
   "edit": "编辑",
   "check": "查看",
   "delete": "删除",
-  "add_host": "添加主机"
+  "add_host": "添加主机",
+  "submit_new_host": "确认添加",
+  "submit_edited_host": "确认修改",
+  "add_new_host": "添加主机",
+  "edit_host": "编辑主机",
+  "add_new_host.description": "endpoint 为 http(s)://host:port",
+  "add_new_host.name": "主机名",
+  "add_new_host.endpoint": "Endpoint",
+  "add_new_host.username": "用户名",
+  "add_new_host.password": "密码",
+  "manager.name": "主机名",
+  "manager.username": "用户名",
+  "manager.password": "密码",
+  "manager.action": "操作",
+  "manager.index": "序号",
+  "manager.endpoint": "endpoint"
 }

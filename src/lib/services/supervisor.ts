@@ -3,6 +3,7 @@ import {BaseClient} from "$lib/services/baseClient";
 import normalizeUrl from "normalize-url";
 import type {AxiosResponse} from "axios";
 import type {SupervisorConfigInfo, SupervisorSummaryInfo} from "$lib/types/supervisord";
+import type {Host} from "$lib/store/hosts.model";
 
 export const postSupervisorShutdown = (alovaInstance: BaseClient["alovaInstance"]) =>
     alovaInstance.Post("/supervisor/shutdown");
@@ -17,9 +18,10 @@ export const getSupervisorSummary = (alovaInstance: BaseClient["alovaInstance"])
     alovaInstance.Get<AxiosResponse<SupervisorSummaryInfo>>("/supervisor/summary");
 
 export class SupervisorClient extends BaseClient {
-    constructor(endpoint: string) {
+    constructor(host: Host) {
         super();
-        this.endpoint = endpoint;
+        this.endpoint = host.endpoint!;
+        this.setAuth(host.username!, host.password!);
         this.postSupervisorShutdown = postSupervisorShutdown.bind(null, this.alovaInstance);
         this.postSupervisorReload = postSupervisorReload.bind(null, this.alovaInstance);
         this.getSupervisorConfig = getSupervisorConfig.bind(null, this.alovaInstance);

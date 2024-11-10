@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 
+	import {open} from '@tauri-apps/plugin-shell';
 	import * as Avatar from "$lib/components/ui/avatar";
 	import ChevronLeft from "lucide-svelte/icons/chevron-left";
 	import ChevronRight from "lucide-svelte/icons/chevron-right";
@@ -32,6 +33,8 @@
 	import SettingDialog from "$lib/widgets/SettingDialog.svelte";
 	import {loadTranslations, t} from "$i18n/index";
 	import Breadcrumbs from "$lib/widgets/Breadcrumbs.svelte";
+	import {GitFork} from "lucide-svelte";
+	import {PUBLIC_GITHUB_LINK} from "$env/static/public";
 
 	loadTranslations("zh");
 
@@ -76,13 +79,21 @@
 							builders={[builder]}
 					>
 						<Avatar.Root>
-							<Avatar.Image src="https://github.com/shadcn.png" alt="@shadcn"/>
-							<Avatar.Fallback>CN</Avatar.Fallback>
+							<Avatar.Image src="/favicon.png" alt="@supervisord-plus"/>
+								<Avatar.Fallback>CN</Avatar.Fallback>
 						</Avatar.Root>
 					</Button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end">
-					<DropdownMenu.Label>My Account</DropdownMenu.Label>
+					<DropdownMenu.Label>
+						<Button class="flex items-center justify-center gap-2"
+						        variant="link"
+						        size="sm"
+						        on:click={()=>open(PUBLIC_GITHUB_LINK)}>
+							<GitFork class="w-3.5 h-3.5"/>
+							<span>Github</span>
+						</Button>
+					</DropdownMenu.Label>
 					<DropdownMenu.Separator/>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>

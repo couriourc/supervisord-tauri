@@ -63,6 +63,8 @@ export class Host {
     create_time?: number = Date.now();
     update_time?: number = Date.now();
     id?: string = "";
+    password?: string = "";
+    username?: string = "";
 
     constructor(host: Partial<Host>) {
         this.id = host.id;
@@ -71,19 +73,14 @@ export class Host {
         this.group = host.group ?? this.group;
         this.create_time = host.create_time ?? this.create_time;
         this.update_time = host.update_time ?? this.update_time;
+        this.password = host.password ?? this.password;
+        this.username = host.username ?? this.username;
     }
 
-    update() {
-
-    }
 }
 
 
 export const hostsManager = new HostsManager();
-export const hostSchema = z.object({
-    name: z.string().min(2).max(50),
-    endpoint: z.string().url()
-});
 
 export function useHostsManager() {
     const loading = writable<boolean>(false);

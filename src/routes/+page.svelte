@@ -27,25 +27,25 @@
 	import {Progress} from "$lib/components/ui/progress";
 	import {Separator} from "$lib/components/ui/separator";
 	import * as Sheet from "$lib/components/ui/sheet";
-	import * as Table from "$lib/components/ui/table";
 	import * as Tabs from "$lib/components/ui/tabs";
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import {useRequest} from "alova/client";
 	import {RingLoader} from "svelte-loading-spinners";
 	import {EProcessStatus} from "$lib/types/program";
-	import {getMetrics} from "$lib/services/metrics";
+	//	import {getMetrics} from "$lib/services/metrics";
 
 	import dayjs from "dayjs";
 	import AddHostDialog from "$lib/widgets/AddHostDialog.svelte";
-	import {Host, hostsManager, useHostsManager} from "$lib/store/hosts.model";
-	import {onMount} from "svelte";
-	import {Import, LucidePlusCircle, Plus} from "lucide-svelte";
-	import Breadcrumbs from "$lib/widgets/Breadcrumbs.svelte";
+	import {useHostsManager} from "$lib/store/hosts.model";
+	import {setContext} from "svelte";
+	import {Import, LucidePlusCircle} from "lucide-svelte";
+	import HostsManagerTable from "$lib/widgets/HostsManagerTable.svelte";
+	import {t} from "$i18n/index";
 
-	const {data: hosts, loading: isLoadingData, refresh: refreshList, remove: handleRemove} = useHostsManager();
+	setContext("hostsManager", useHostsManager());
 
 
-	const {loading: isLoadingMetrics, data: metrics} = useRequest<any>(getMetrics, {force: true});
+	//	const {loading: isLoadingMetrics, data: metrics} = useRequest(getMetrics, {force: true});
 
 
 	function handleToAddNewHosts() {
@@ -69,12 +69,10 @@
 				</Card.Header>
 
 				<Card.Footer class="absolute bottom-0 right-1">
-					<AddHostDialog
-							onCreated={refreshList}
-					>
-						<Button on:click={handleToAddNewHosts} class="flex gap-2">
-							<LucidePlusCircle/>
-							<span>Add Host</span>
+					<AddHostDialog>
+						<Button on:click={handleToAddNewHosts} class="flex gap-1">
+							<LucidePlusCircle class="h-4 w-4"/>
+							<span>{$t("hosts.add_host")}</span>
 						</Button>
 					</AddHostDialog>
 				</Card.Footer>
@@ -145,56 +143,7 @@
 						<Card.Description>All Hosts from your created.</Card.Description>
 					</Card.Header>
 					<Card.Content>
-						<Table.Root>
-							<Table.Header>
-								<Table.Row>
-									<Table.Head>#</Table.Head>
-									<Table.Head>Name</Table.Head>
-									<Table.Head class="hidden sm:table-cell">
-										EndpointUrl
-									</Table.Head>
-									<Table.Head class="hidden sm:table-cell">Action</Table.Head>
-								</Table.Row>
-							</Table.Header>
-							<Table.Body>
-								{#if $isLoadingData}
-									<div class="flex items-center justify-center  w-full  my-[24px] mx-auto">
-										<RingLoader color="hsl(var(--primary) / 0.9)"></RingLoader>
-									</div>
-								{:else }
-									{#each $hosts as host,index }
-										<Table.Row class="bg-accent">
-											<Table.Cell>
-												<div class="font-medium">{index + 1}</div>
-											</Table.Cell>
-											<Table.Cell>
-												<div class="font-medium">{host.name}</div>
-											</Table.Cell>
-											<Table.Cell class="hidden sm:table-cell">
-												<Badge class="text-xs" variant="secondary">
-													{host.endpoint}
-												</Badge>
-											</Table.Cell>
-											<Table.Cell>
-												<Button variant="link" class="text-gray-400">
-													<a href={`host?host_id=${host.id}`}>check</a>
-												</Button>
-
-												<Button variant="link">
-													edit
-												</Button>
-												<Button on:click={handleRemove.bind(null,host)} variant="link"
-												        class="text-red-400">
-													delete
-												</Button>
-											</Table.Cell>
-										</Table.Row>
-									{/each}
-
-								{/if}
-
-							</Table.Body>
-						</Table.Root>
+						<HostsManagerTable/>
 					</Card.Content>
 				</Card.Root>
 			</Tabs.Content>
@@ -247,13 +196,13 @@
 			</Card.Header>
 			<Card.Content class="p-6 text-sm">
 				<div class="grid gap-3 max-h-[500px] overflow-y-auto">
-					{#if $isLoadingMetrics}
-						<div class="mx-auto">
-							<RingLoader></RingLoader>
-						</div>
-					{:else }
-						{@html $metrics?.data}
-					{/if}
+					<!--{#if $isLoadingMetrics}-->
+					<div class="mx-auto">
+						<RingLoader></RingLoader>
+					</div>
+					<!--{:else }-->
+					<!--	{@html $metrics?.data}-->
+					<!--{/if}-->
 				</div>
 			</Card.Content>
 			<Card.Footer class="bg-muted/50 flex flex-row items-center border-t px-6 py-3">

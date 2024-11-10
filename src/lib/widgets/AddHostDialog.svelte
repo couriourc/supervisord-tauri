@@ -6,12 +6,14 @@
 	import * as Dialog from "$lib/components/ui/dialog";
 	import {Input} from "$lib/components/ui/input";
 	import {Label} from "$lib/components/ui/label";
-	import {Host, hostsManager} from "$lib/store/hosts.model";
+	import {Host, hostsManager, useHostsManager} from "$lib/store/hosts.model";
 	import {useForm, Hint, validators, required} from "svelte-use-form";
 	import {noop} from "underscore";
 	import toast, {Toaster} from 'svelte-french-toast';
+	import {getContext} from "svelte";
 
-	export let onCreated: Function = noop;
+	const {refresh: refreshList,} = getContext<ReturnType<typeof useHostsManager>>("hostsManager");
+
 
 	const form = useForm({
 		name: {},
@@ -19,10 +21,8 @@
 	});
 
 	async function handleAddNewHost() {
-		await hostsManager.Create(new Host({
-			...$form.values
-		}));
-		onCreated();
+		await hostsManager.Create(new Host({...$form.values}));
+		await refreshList();
 		toast.success('Host added successfully');
 	}
 

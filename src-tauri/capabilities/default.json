@@ -12,6 +12,11 @@
     "sql:default",
     "sql:allow-execute",
     "clipboard-manager:default",
-    "clipboard-manager:allow-write-text"
+    "clipboard-manager:allow-write-text",
+    "dialog:default",
+    "fs:default",
+    "fs:allow-app-write",
+    "shell:default",
+    "shell:allow-open"
   ]
 }

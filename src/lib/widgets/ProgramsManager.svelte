@@ -33,61 +33,22 @@
 	import * as Tooltip from "$lib/components/ui/tooltip";
 	import {ProgramClient} from "$lib/services/program";
 	import {useRequest} from "alova/client";
-	import {RingLoader} from "svelte-loading-spinners";
 	import {EProcessStatus} from "$lib/types/program";
-	import {copy} from '$lib/directives/copy';
 	import {t} from "$i18n/index";
 
-	import dayjs from "dayjs";
-	import {MetricsClient} from "$lib/services/metrics";
 	import {Host} from "$lib/store/hosts.model";
-	import {SupervisorClient} from "$lib/services/supervisor";
-	import {Edit, Eye, EyeIcon, RefreshCwIcon, SaveIcon} from "lucide-svelte";
 	import ProgramsTable from "./ProgramsManagerWidgets/ProgramsTable.svelte";
 	import HostConfEditor from "$lib/widgets/ProgramsManagerWidgets/HostConfEditor.svelte";
-	import {get, writable} from "svelte/store";
-	import type {Editor} from "svelte-ace";
-
+	import {setContext} from "svelte";
 
 	export let host = new Host({});
 	const endpoint: string = host.endpoint!;
 
-	let editable = false;
-	let editor: { getEditorValue: () => string };
+	const {getProgramList} = new ProgramClient(endpoint);
+	const {send: refreshList} = useRequest(getProgramList, {force: true});
 
-	const {getProgramList, postProgramStartByName, postProgramStopByName,} = new ProgramClient(endpoint);
-	const {getSupervisorConfig, getSupervisorSummary} = new SupervisorClient(endpoint);
-	const {getMetrics} = new MetricsClient(endpoint);
-
-	const {
-		loading: isLoadingData,
-		data: processes,
-		send: refreshList
-	} = useRequest(getProgramList, {force: true});
-	const {loading: isLoadingMetrics, data: metrics} = useRequest(getMetrics, {force: true});
-	const {
-		data: editorConfig,
-		loading: isLoadingEditorConfig,
-		send: refreshSupervisorConfig
-	} = useRequest(getSupervisorConfig);
-
-	async function handleRefreshSupervisorConfig() {
-		await refreshSupervisorConfig();
-	}
-
-	async function handlePostProgramStartByName(name: string) {
-		await postProgramStartByName(name);
-		await refreshList();
-	}
-
-	async function handlePostStopStartByName(name: string) {
-		await postProgramStopByName(name);
-		await refreshList();
-	}
-
-	async function handleUpdateConfig(canEdit: boolean) {
-		console.log(editor.getEditorValue());
-	}
+	setContext<string>("host.endpoint", endpoint);
+	let filtered;
 
 </script>
 
@@ -96,45 +57,12 @@
 		class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3"
 >
 	<div class="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-		<Tabs.Root value="program">
-			<div class="flex items-center">
-				<div class="ml-auto flex items-center gap-2">
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger asChild let:builder>
-							<Button
-									variant="outline"
-									size="sm"
-									class="h-7 gap-1 text-sm"
-									builders={[builder]}
-							>
-								<ListFilter class="h-3.5 w-3.5"/>
-								<span class="sr-only sm:not-sr-only">Filter</span>
-							</Button>
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content align="end">
-							<DropdownMenu.Label>Filter by Status</DropdownMenu.Label>
-							<DropdownMenu.Separator/>
-							{#each Object.entries(EProcessStatus) as [status] }
-								<DropdownMenu.CheckboxItem>
-									{$t(`program.${status.toLowerCase()}`)}
-								</DropdownMenu.CheckboxItem>
-							{/each}
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-					<Button size="sm" variant="outline" class="h-7 gap-1 text-sm">
-						<File class="h-3.5 w-3.5"/>
-						<span class="sr-only sm:not-sr-only">Export</span>
-					</Button>
-				</div>
-			</div>
-			<Tabs.Content value="program">
-				<ProgramsTable host={host} endpoint={endpoint}></ProgramsTable>
-			</Tabs.Content>
-		</Tabs.Root>
+		<ProgramsTable host={host}></ProgramsTable>
+
 	</div>
 
-	<div>
-		<HostConfEditor refresh={()=>refreshList()}
-		                endpoint={endpoint}/>
-	</div>
+	<!-- S conf editor -->
+	<HostConfEditor refresh={()=>refreshList()}/>
+	<!-- E conf editor -->
 </main>
+

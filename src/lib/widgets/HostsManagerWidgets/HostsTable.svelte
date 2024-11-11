@@ -16,11 +16,15 @@
 	import HostsManagerTableCheckbox from "./HostsManagerTableCheckbox.svelte";
 	import {cn} from "$lib/utils";
 	import HostsTableAction from "$lib/widgets/HostsManagerWidgets/HostsTableAction.svelte";
+	import {RefreshCwIcon} from "lucide-svelte";
 
 	const {
 		data: hosts,
 		loading: isLoadingData,
-		remove: handleRemove
+		remove: handleRemove,
+		refresh: refreshList,
+		stopAll,
+		reloadAll
 	} = getContext<ReturnType<typeof useHostsManager>>(HostsManager.ContextKey);
 
 	function renderTable(hosts: Host[]) {
@@ -95,8 +99,14 @@
 		return table.createViewModel(columns);
 	}
 
-	let {headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates} = renderTable($hosts);
-	let {selectedDataIds} = pluginStates.select;
+	let {
+		headerRows,
+		pageRows,
+		tableAttrs,
+		tableBodyAttrs,
+		pluginStates: {select: {allPageRowsSelected, selectedDataIds}}
+	} = renderTable($hosts);
+	//	let {selectedDataIds} = pluginStates.select;
 	const tableHeaderClassMap: Record<any, any> = {
 		'selection': "w-[4em] text-center",
 		'index': "w-[4em] text-center",
@@ -118,61 +128,96 @@
 		tableAttrs = _tableAttrs;
 		tableBodyAttrs = _tableBodyAttrs;
 		selectedDataIds = _selectedDataIds;
-		console.log("Updating");
+	}
+
+	export function getData() {
+		return $hosts;
 	}
 
 </script>
 
-<Table.Root {...$tableAttrs}>
-	<Table.Header>
-		{#each $headerRows as headerRow}
-			<Subscribe rowAttrs={headerRow.attrs()}>
-				<Table.Row
-				>
-					{#each headerRow.cells as cell (cell.id)}
-						<Subscribe attrs={cell.attrs()} let:attrs let:props
-						           props={cell.props()}>
-							<Table.Head {...attrs}
-							            class={`[&:has([role=checkbox])]:pl-3 header ${tableHeaderClassMap[cell.id]}`}
-							>
-								<Render of={cell.render()}/>
-							</Table.Head>
-						</Subscribe>
-					{/each}
-				</Table.Row>
-			</Subscribe>
-		{/each}
-	</Table.Header>
-	<Table.Body {...$tableBodyAttrs}>
-		{#each $pageRows as row (row.id)}
-			<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
-				<Table.Row {...rowAttrs} data-state={$selectedDataIds[row.id] && "selected"}
-				>
-					{#each row.cells as cell (cell.id)}
-						<Subscribe attrs={cell.attrs()} props={cell.props()} let:attrs>
-							<Table.Cell {...attrs}
-							            class={cn("[&:has([role=checkbox])]:pl-3","cell", tableHeaderClassMap[cell.id])}
-							>
-								<Render of={cell.render()}/>
-							</Table.Cell>
-						</Subscribe>
-					{/each}
-				</Table.Row>
-			</Subscribe>
-		{/each}
-	</Table.Body>
-</Table.Root>
-{#if !$hosts.length}
-	<Card.Root class="shadow-none rounded-[0] border-0">
-		<Card.Content>
-			<div class="w-full pt-[12px] flex-col flex items-center justify-center mx-auto">
-				<Empty/>
-				<AddHostDialog>
-					<Button size="sm" variant="link">{$t("hosts.add_host")}?</Button>
-				</AddHostDialog>
+<Card.Root>
+	<Card.Header class="px-7">
+		<div class="flex justify-between gap-[12px] relative">
+			<div>
+				<Card.Title>
+					Hosts
+					<Button
+							size="icon"
+							variant="outline"
+							class="h-6 w-6 transition-opacity"
+							on:click={refreshList.bind(null)}
+					>
+						<RefreshCwIcon class="h-3 w-3 "/>
+						<span class="sr-only">{$t("program.refresh")}</span>
+					</Button>
+				</Card.Title>
+				<Card.Description>
+					All Hosts from by you created.
+				</Card.Description>
 			</div>
-		</Card.Content>
-		<Card.Footer>
-		</Card.Footer>
-	</Card.Root>
-{/if}
+			<div class="flex gap-[12px]">
+				<Button on:click={reloadAll.bind(null)} size="sm">Reload
+				</Button>
+				<Button on:click={stopAll.bind(null)} size="sm" variant="destructive">Shutdown
+				</Button>
+			</div>
+		</div>
+
+	</Card.Header>
+	<Card.Content>
+		<Table.Root {...$tableAttrs}>
+			<Table.Header>
+				{#each $headerRows as headerRow}
+					<Subscribe rowAttrs={headerRow.attrs()}>
+						<Table.Row
+						>
+							{#each headerRow.cells as cell (cell.id)}
+								<Subscribe attrs={cell.attrs()} let:attrs let:props
+								           props={cell.props()}>
+									<Table.Head {...attrs}
+									            class={`[&:has([role=checkbox])]:pl-3 header ${tableHeaderClassMap[cell.id]}`}
+									>
+										<Render of={cell.render()}/>
+									</Table.Head>
+								</Subscribe>
+							{/each}
+						</Table.Row>
+					</Subscribe>
+				{/each}
+			</Table.Header>
+			<Table.Body {...$tableBodyAttrs}>
+				{#each $pageRows as row (row.id)}
+					<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
+						<Table.Row {...rowAttrs} data-state={$selectedDataIds[row.id] && "selected"}
+						>
+							{#each row.cells as cell (cell.id)}
+								<Subscribe attrs={cell.attrs()} props={cell.props()} let:attrs>
+									<Table.Cell {...attrs}
+									            class={cn("[&:has([role=checkbox])]:pl-3","cell", tableHeaderClassMap[cell.id])}
+									>
+										<Render of={cell.render()}/>
+									</Table.Cell>
+								</Subscribe>
+							{/each}
+						</Table.Row>
+					</Subscribe>
+				{/each}
+			</Table.Body>
+		</Table.Root>
+		{#if !$hosts.length}
+			<Card.Root class="shadow-none rounded-[0] border-0">
+				<Card.Content>
+					<div class="w-full pt-[12px] flex-col flex items-center justify-center mx-auto">
+						<Empty/>
+						<AddHostDialog>
+							<Button size="sm" variant="link">{$t("hosts.add_host")}?</Button>
+						</AddHostDialog>
+					</div>
+				</Card.Content>
+				<Card.Footer>
+				</Card.Footer>
+			</Card.Root>
+		{/if}
+	</Card.Content>
+</Card.Root>

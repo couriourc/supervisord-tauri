@@ -3,6 +3,8 @@ import {z} from "zod";
 import {writable} from "svelte/store";
 import {onMount} from "svelte";
 import {sleep} from "radash";
+import {ProgramClient} from "$lib/services/program";
+import {SupervisorClient} from "$lib/services/supervisor";
 
 export class HostsManager {
     static namespace: string = "hosts";
@@ -68,15 +70,34 @@ export class HostsManager {
     async BatchUpdate(hosts: Host[]) {
         /*TODO: Optimize Query Function*/
         const store = await getStore();
-        for (const host of hosts) {
-            const allHosts = await this.Query();
-            const nHostIndex = allHosts.findIndex(someHost => someHost.id === host.id);
-            if (nHostIndex === -1) {
-                await this.Create(host);
-            } else {
-                await this.Replace(host);
-            }
+        const allHosts = await this.Query();
+        const hostsMap = allHosts.reduce((pre, host) => {
+            return pre.set(host.id, host);
+        }, new Map<Host["id"], Host>());
 
+        for (const host of hosts) {
+            if (hostsMap.has(host.id)) {
+                await this.Replace(host);
+                continue;
+            }
+            hostsMap.set(host.id, host);
+            await this.Create(host);
+        }
+    }
+
+    async ReloadAll() {
+        const allHosts = await this.Query();
+        for (const host of allHosts) {
+            const {postSupervisorReload} = new SupervisorClient(host);
+            await postSupervisorReload();
+        }
+    }
+
+    async StopAll() {
+        const allHosts = await this.Query();
+        for (const host of allHosts) {
+            const {postSupervisorShutdown} = new SupervisorClient(host);
+            await postSupervisorShutdown();
         }
     }
 }
@@ -125,6 +146,14 @@ export function useHostsManager() {
         await hostsManager.BatchUpdate(hosts);
         await refresh();
     };
+    const reloadAll = async () => {
+        await hostsManager.ReloadAll();
+        await refresh();
+    };
+    const stopAll = async () => {
+        await hostsManager.StopAll();
+        await refresh();
+    };
     onMount(async () => {
         data.set(await hostsManager.Query());
     });
@@ -133,6 +162,8 @@ export function useHostsManager() {
         data,
         refresh,
         batchUpdate,
-        remove
+        remove,
+        reloadAll,
+        stopAll
     };
 }

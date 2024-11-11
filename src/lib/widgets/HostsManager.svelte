@@ -52,31 +52,12 @@
 			        on:click={handleExport}
 			>{$t('common.export')}</button>
 		</Button>
-		<!--		<Button size="sm" variant="outline" class="h-7 gap-1 text-sm" on:click={handleImport}>-->
-		<!--			<Import class="h-3.5 w-3.5"/>-->
-		<!--			<span class="sr-only sm:not-sr-only capitalize">{$t('common.import')}</span>-->
-		<!--		</Button>-->
+		<Button size="sm" variant="outline" class="h-7 gap-1 text-sm" on:click={handleImport}>
+			<Import class="h-3.5 w-3.5"/>
+			<span class="sr-only sm:not-sr-only capitalize">{$t('common.import')}</span>
+		</Button>
 	</div>
 </div>
 <Tabs.Content value="week">
-	<Card.Root>
-		<Card.Header class="px-7">
-			<Card.Title>Hosts
-
-				<Button
-						size="icon"
-						variant="outline"
-						class="h-6 w-6 transition-opacity"
-						on:click={refreshList.bind(null)}
-				>
-					<RefreshCwIcon class="h-3 w-3 "/>
-					<span class="sr-only">{$t("program.refresh")}</span>
-				</Button>
-			</Card.Title>
-			<Card.Description>All Hosts from by you created.</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			<HostsTable/>
-		</Card.Content>
-	</Card.Root>
+			<HostsTable bind:this={hostsTable}/>
 </Tabs.Content>

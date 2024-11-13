@@ -27,4 +27,5 @@ tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tauri-plugin-clipboard-manager = "2.0.2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
+local-ip-address = "0.6.3"
 

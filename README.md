@@ -1,7 +1,12 @@
-# Tauri + SvelteKit + TypeScript
+# Supervisord-Tauri
 
-This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
+<p width="100%" height="100%">
+    <a href="github.com/couriourc/supervisord-plus"><img src="static/favicon.png" align="center"></a>
+</p>
 
-## Recommended IDE Setup
+## Feature
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+- Supervisord Host Manager
+- Reload All Host
+- Edit Config Online
+- Host Discover

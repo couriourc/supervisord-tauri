@@ -17,5 +17,6 @@
   "process": "Process",
   "control": "Control",
   "command": "Command",
-  "refresh": "Refresh"
+  "refresh": "Refresh",
+  "args": "Args"
 }

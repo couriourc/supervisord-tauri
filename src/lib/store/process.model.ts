@@ -15,4 +15,5 @@ export interface ProcessModel {
     stdout_logfile: string;
     stderr_logfile: string;
     pid: number;
+    args: string[]
 }

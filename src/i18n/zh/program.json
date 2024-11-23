@@ -17,5 +17,6 @@
   "process": "进程",
   "control": "操作",
   "command": "命令",
-  "refresh": "刷新"
+  "refresh": "刷新",
+  "args": "传参"
 }
